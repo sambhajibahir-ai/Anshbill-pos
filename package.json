@@ -5,7 +5,6 @@
   "type": "module",
   "description": "AnshBill POS - retail billing with GST invoices, barcode scanning, stock alerts and daily sales reports",
   "workspaces": [
-    "server",
     "client"
   ],
   "scripts": {
