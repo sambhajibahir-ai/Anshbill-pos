@@ -19,15 +19,16 @@ const schema = z.object({
 export default function settingsRoutes(db) {
   const r = Router();
 
-  r.get('/', (req, res) => res.json(getSettings(db)));
+  r.get('/', async (req, res) => res.json(await getSettings(db)));
 
-  r.put('/', requireAdmin, (req, res) => {
+  r.put('/', requireAdmin, async (req, res) => {
     const b = schema.parse(req.body);
     // Shop GSTIN fixes the home state for CGST/SGST vs IGST.
     if (b.shop_gstin) b.shop_state_code = b.shop_gstin.slice(0, 2);
-    const up = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
-    for (const [k, v] of Object.entries(b)) up.run(k, v);
-    res.json(getSettings(db));
+    for (const [k, v] of Object.entries(b)) {
+      await db`INSERT INTO settings (key, value) VALUES (${k}, ${v}) ON CONFLICT(key) DO UPDATE SET value = EXCLUDED.value`;
+    }
+    res.json(await getSettings(db));
   });
 
   return r;

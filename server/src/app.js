@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import path from 'node:path';
-import fs from 'node:fs';
 import { ZodError } from 'zod';
 import { requireAuth } from './auth.js';
 import { HttpError } from './errors.js';
@@ -30,13 +28,6 @@ export function createApp(db) {
   app.use('/api/settings', settingsRoutes(db));
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
-  // Serve the built React app in production.
-  const dist = path.resolve(import.meta.dirname, '../../client/dist');
-  if (fs.existsSync(dist)) {
-    app.use(express.static(dist));
-    app.get(/^(?!\/api).*/, (req, res) => res.sendFile(path.join(dist, 'index.html')));
-  }
-
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
     if (err instanceof ZodError) {
@@ -44,8 +35,9 @@ export function createApp(db) {
       return res.status(400).json({ error: `${i.path.join('.') || 'input'}: ${i.message}` });
     }
     if (err instanceof HttpError) return res.status(err.status).json({ error: err.message });
-    if (String(err.message).includes('UNIQUE constraint failed')) {
-      const field = err.message.split('.').pop();
+    if (String(err.message).includes('duplicate key value violates unique constraint')) {
+      const match = err.message.match(/"([^"]+)"/);
+      const field = match ? match[1].split('_').pop() : 'field';
       return res.status(409).json({ error: `A record with this ${field} already exists` });
     }
     console.error(err);
