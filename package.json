@@ -4,17 +4,13 @@
   "private": true,
   "type": "module",
   "description": "AnshBill POS - retail billing with GST invoices, barcode scanning, stock alerts and daily sales reports",
-  "workspaces": [
-    "client"
-  ],
   "scripts": {
-    "dev": "concurrently -n api,web -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
-    "dev:server": "npm run dev -w server",
-    "dev:client": "npm run dev -w client",
-    "build": "npm run build -w client",
-    "start": "npm run start -w server",
-    "seed": "npm run seed -w server",
-    "test": "node --disable-warning=ExperimentalWarning --test \"shared/**/*.test.js\" \"server/test/**/*.test.js\""
+    "dev": "concurrently -k -n web,api \"vite\" \"node server/dev.js\"",
+    "dev:web": "vite",
+    "dev:api": "node server/dev.js",
+    "build": "vite build && vite build --ssr src/entry-server.jsx --outDir dist-server && node scripts/prerender.mjs",
+    "preview": "vite preview",
+    "og": "node scripts/make-og.mjs"
   },
   "engines": {
     "node": ">=22.13"
