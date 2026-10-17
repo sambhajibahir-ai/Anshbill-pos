@@ -10,3 +10,4 @@ server/data
 *.db-wal
 *.db-shm
 .env
+
