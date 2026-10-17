@@ -1,4 +1,4 @@
-import { DatabaseSync } from 'node:sqlite';
+import initSqlJs from 'sql.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { hashPassword } from './auth.js';
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-  id            INTEGER PRIMARY KEY,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   username      TEXT NOT NULL UNIQUE COLLATE NOCASE,
   name          TEXT NOT NULL,
   password_hash TEXT NOT NULL,
@@ -20,14 +20,14 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS products (
-  id            INTEGER PRIMARY KEY,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   name          TEXT NOT NULL,
   barcode       TEXT UNIQUE,
   sku           TEXT,
   hsn           TEXT,
   unit          TEXT NOT NULL DEFAULT 'pcs',
-  price         INTEGER NOT NULL CHECK (price >= 0),          -- selling price, paise
-  cost          INTEGER NOT NULL DEFAULT 0 CHECK (cost >= 0), -- purchase price, paise
+  price         INTEGER NOT NULL CHECK (price >= 0),
+  cost          INTEGER NOT NULL DEFAULT 0 CHECK (cost >= 0),
   gst_rate      REAL NOT NULL DEFAULT 0,
   tax_inclusive INTEGER NOT NULL DEFAULT 1,
   stock         REAL NOT NULL DEFAULT 0,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
 
 CREATE TABLE IF NOT EXISTS customers (
-  id         INTEGER PRIMARY KEY,
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
   name       TEXT NOT NULL,
   phone      TEXT UNIQUE,
   gstin      TEXT,
@@ -50,17 +50,17 @@ CREATE TABLE IF NOT EXISTS customers (
 );
 
 CREATE TABLE IF NOT EXISTS invoices (
-  id              INTEGER PRIMARY KEY,
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
   invoice_no      TEXT NOT NULL UNIQUE,
   fy              TEXT NOT NULL,
   seq             INTEGER NOT NULL,
-  bill_date       TEXT NOT NULL,               -- YYYY-MM-DD (local)
-  created_at      TEXT NOT NULL,               -- YYYY-MM-DD HH:MM:SS (local)
+  bill_date       TEXT NOT NULL,
+  created_at      TEXT NOT NULL,
   customer_id     INTEGER REFERENCES customers(id),
   customer_name   TEXT,
   customer_phone  TEXT,
   customer_gstin  TEXT,
-  place_of_supply TEXT NOT NULL,               -- state code
+  place_of_supply TEXT NOT NULL,
   inter_state     INTEGER NOT NULL DEFAULT 0,
   gross           INTEGER NOT NULL,
   discount        INTEGER NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS invoices (
 CREATE INDEX IF NOT EXISTS idx_invoices_date ON invoices(bill_date);
 
 CREATE TABLE IF NOT EXISTS invoice_items (
-  id            INTEGER PRIMARY KEY,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   invoice_id    INTEGER NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
   product_id    INTEGER REFERENCES products(id),
   name          TEXT NOT NULL,
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS invoice_items (
 CREATE INDEX IF NOT EXISTS idx_items_invoice ON invoice_items(invoice_id);
 
 CREATE TABLE IF NOT EXISTS stock_movements (
-  id         INTEGER PRIMARY KEY,
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
   product_id INTEGER NOT NULL REFERENCES products(id),
   change     REAL NOT NULL,
   reason     TEXT NOT NULL CHECK (reason IN ('sale','purchase','adjustment','cancel','opening')),
@@ -127,13 +127,101 @@ const DEFAULT_SETTINGS = {
   allow_negative_stock: '0',
 };
 
-export function openDb(file = process.env.DB_PATH) {
+class SqliteDatabaseWrapper {
+  constructor(rawDb, filePath) {
+    this.rawDb = rawDb;
+    this.filePath = filePath;
+  }
+
+  save() {
+    if (this.filePath && this.filePath !== ':memory:') {
+      try {
+        const data = this.rawDb.export();
+        const buffer = Buffer.from(data);
+        fs.writeFileSync(this.filePath, buffer);
+      } catch (err) {
+        console.error('Failed to write database file:', err);
+      }
+    }
+  }
+
+  exec(sql) {
+    this.rawDb.run(sql);
+    this.save();
+  }
+
+  prepare(sql) {
+    const self = this;
+    return {
+      run(...args) {
+        let params = args;
+        if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
+          params = args[0];
+        }
+        self.rawDb.run(sql, params);
+        const lastIdRes = self.rawDb.exec('SELECT last_insert_rowid() AS id');
+        const lastInsertRowid = lastIdRes.length && lastIdRes[0].values.length ? lastIdRes[0].values[0][0] : 0;
+        const changesRes = self.rawDb.exec('SELECT changes() AS c');
+        const changes = changesRes.length && changesRes[0].values.length ? changesRes[0].values[0][0] : 0;
+        self.save();
+        return { lastInsertRowid, changes };
+      },
+
+      get(...args) {
+        let params = args;
+        if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
+          params = args[0];
+        }
+        const stmt = self.rawDb.prepare(sql);
+        try {
+          if (params !== undefined) stmt.bind(params);
+          if (stmt.step()) {
+            return stmt.getAsObject();
+          }
+          return null;
+        } finally {
+          stmt.free();
+        }
+      },
+
+      all(...args) {
+        let params = args;
+        if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
+          params = args[0];
+        }
+        const stmt = self.rawDb.prepare(sql);
+        const rows = [];
+        try {
+          if (params !== undefined) stmt.bind(params);
+          while (stmt.step()) {
+            rows.push(stmt.getAsObject());
+          }
+          return rows;
+        } finally {
+          stmt.free();
+        }
+      },
+    };
+  }
+}
+
+export async function openDb(file = process.env.DB_PATH) {
   const dbFile = file || path.resolve(import.meta.dirname, '../../data/atbsoftware.db');
   if (dbFile !== ':memory:') {
     fs.mkdirSync(path.dirname(dbFile), { recursive: true });
   }
-  const db = new DatabaseSync(dbFile);
-  db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
+
+  const SQL = await initSqlJs();
+  let rawDb;
+  if (dbFile !== ':memory:' && fs.existsSync(dbFile)) {
+    const fileBuffer = fs.readFileSync(dbFile);
+    rawDb = new SQL.Database(fileBuffer);
+  } else {
+    rawDb = new SQL.Database();
+  }
+
+  const db = new SqliteDatabaseWrapper(rawDb, dbFile);
+  db.exec('PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);
 
   const insSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
@@ -146,7 +234,6 @@ export function openDb(file = process.env.DB_PATH) {
   return db;
 }
 
-/** Run fn inside an immediate SQLite transaction; rollback on any throw. */
 export function tx(db, fn) {
   db.exec('BEGIN IMMEDIATE');
   try {
@@ -164,7 +251,6 @@ export function getSettings(db) {
   return Object.fromEntries(rows.map((r) => [r.key, r.value]));
 }
 
-/** Local-time timestamp helpers (defaults to Asia/Kolkata). */
 export function nowLocal(d = new Date()) {
   const p = (n) => String(n).padStart(2, '0');
   const date = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;

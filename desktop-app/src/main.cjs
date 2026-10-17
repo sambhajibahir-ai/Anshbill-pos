@@ -35,7 +35,7 @@ async function startBackendServer(profileName = 'default') {
       process.env.DB_PATH = dbPath;
       process.env.TZ = process.env.TZ || 'Asia/Kolkata';
 
-      dbInstance = openDb(dbPath);
+      dbInstance = await openDb(dbPath);
       const expressApp = createApp(dbInstance);
 
       serverInstance = http.createServer(expressApp);
