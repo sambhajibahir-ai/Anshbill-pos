@@ -161,20 +161,20 @@ export default function invoiceRoutes(db) {
     const conditions = [];
     const params = [];
     let pi = 1;
-    if (req.query.from) { conditions.push(`bill_date >= $${pi++}`); params.push(String(req.query.from)); }
-    if (req.query.to) { conditions.push(`bill_date <= $${pi++}`); params.push(String(req.query.to)); }
-    if (req.query.status) { conditions.push(`status = $${pi++}`); params.push(String(req.query.status)); }
-    if (req.query.paymentMode) { conditions.push(`payment_mode = $${pi++}`); params.push(String(req.query.paymentMode)); }
+    if (req.query.from) { conditions.push(`i.bill_date >= $${pi++}`); params.push(String(req.query.from)); }
+    if (req.query.to) { conditions.push(`i.bill_date <= $${pi++}`); params.push(String(req.query.to)); }
+    if (req.query.status) { conditions.push(`i.status = $${pi++}`); params.push(String(req.query.status)); }
+    if (req.query.paymentMode) { conditions.push(`i.payment_mode = $${pi++}`); params.push(String(req.query.paymentMode)); }
     if (req.query.q) {
-      conditions.push(`(invoice_no ILIKE $${pi} OR customer_name ILIKE $${pi} OR customer_phone ILIKE $${pi})`);
+      conditions.push(`(i.invoice_no ILIKE $${pi} OR i.customer_name ILIKE $${pi} OR i.customer_phone ILIKE $${pi})`);
       params.push(`%${String(req.query.q).trim()}%`); pi++;
     }
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const { Pool } = await import('@neondatabase/serverless');
     const pool = new Pool({ connectionString: process.env.DATABASE_URL });
     const result = await pool.query(
-      `SELECT i.id, invoice_no, bill_date, created_at, customer_name, customer_phone,
-        grand_total, payment_mode, status, u.name AS cashier,
+      `SELECT i.id, i.invoice_no, i.bill_date, i.created_at, i.customer_name, i.customer_phone,
+        i.grand_total, i.payment_mode, i.status, u.name AS cashier,
         (SELECT COUNT(*) FROM invoice_items WHERE invoice_id = i.id) AS item_count
         FROM invoices i JOIN users u ON u.id = i.user_id
         ${where} ORDER BY i.id DESC LIMIT 500`,
