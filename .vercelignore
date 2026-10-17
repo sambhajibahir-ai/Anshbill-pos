@@ -1,0 +1,12 @@
+# Don't upload local dev/build artifacts — Vercel builds from source
+node_modules
+server/node_modules
+client/node_modules
+client/dist
+dist
+dist-electron
+server/data
+*.db
+*.db-wal
+*.db-shm
+.env
