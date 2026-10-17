@@ -26,7 +26,7 @@ async function startBackendServer(profileName = 'default') {
   const { openDb } = await import('../server/src/db.js');
   const { createApp } = await import('../server/src/app.js');
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       const profileDir = getProfileDir(profileName);
       const dbPath = path.join(profileDir, 'atbsoftware.db');
