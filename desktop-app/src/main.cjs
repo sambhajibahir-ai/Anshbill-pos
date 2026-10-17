@@ -1,11 +1,9 @@
-import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
-import path from 'node:path';
-import fs from 'node:fs';
-import http from 'node:http';
-import { autoUpdater } from 'electron-updater';
-import log from 'electron-log';
-import { openDb } from '../server/src/db.js';
-import { createApp } from '../server/src/app.js';
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const path = require('node:path');
+const fs = require('node:fs');
+const http = require('node:http');
+const { autoUpdater } = require('electron-updater');
+const log = require('electron-log');
 
 log.transports.file.level = 'info';
 autoUpdater.logger = log;
@@ -24,7 +22,10 @@ function getProfileDir(profileName = 'default') {
 }
 
 // Start local embedded backend server on a dynamic or configured loopback port
-function startBackendServer(profileName = 'default') {
+async function startBackendServer(profileName = 'default') {
+  const { openDb } = await import('../server/src/db.js');
+  const { createApp } = await import('../server/src/app.js');
+
   return new Promise((resolve, reject) => {
     try {
       const profileDir = getProfileDir(profileName);
@@ -38,7 +39,7 @@ function startBackendServer(profileName = 'default') {
       const expressApp = createApp(dbInstance);
 
       serverInstance = http.createServer(expressApp);
-      // Bind to localhost on ephemeral port (0) or fixed port if preferred
+      // Bind to localhost on ephemeral port (0)
       serverInstance.listen(0, '127.0.0.1', () => {
         serverPort = serverInstance.address().port;
         log.info(`Embedded POS Backend listening on http://127.0.0.1:${serverPort}`);
