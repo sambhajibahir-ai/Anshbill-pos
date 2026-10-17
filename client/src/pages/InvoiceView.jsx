@@ -16,11 +16,11 @@ export default function InvoiceView() {
   const { settings, isAdmin, refreshAlerts } = useApp();
   const [inv, setInv] = useState(null);
   const [error, setError] = useState('');
-  const [format, setFormat] = useState(() => localStorage.getItem('anshbill.printFormat') || 'a4');
+  const [format, setFormat] = useState(() => localStorage.getItem('atbsoftware.printFormat') || 'a4');
   const [cancelOpen, setCancelOpen] = useState(false);
 
   useEffect(() => { api(`/invoices/${id}`).then(setInv).catch((e) => setError(e.message)); }, [id]);
-  useEffect(() => { localStorage.setItem('anshbill.printFormat', format); }, [format]);
+  useEffect(() => { localStorage.setItem('atbsoftware.printFormat', format); }, [format]);
 
   useEffect(() => {
     if (!isNew) return;
@@ -191,7 +191,7 @@ function A4Invoice({ inv, s }) {
         <p>{s.invoice_footer}</p>
         <div className="sign">For {s.shop_name}<br /><br /><br />Authorised signatory</div>
       </footer>
-      <p className="tiny muted">Computer-generated invoice · Billed by {inv.cashier} · AnshBill POS</p>
+      <p className="tiny muted">Computer-generated invoice · Billed by {inv.cashier} · ATB Software POS</p>
     </article>
   );
 }

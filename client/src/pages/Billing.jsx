@@ -6,7 +6,7 @@ import { useApp } from '../App.jsx';
 import { ErrorNote, Money, PAYMENT_LABELS } from '../components/ui.jsx';
 const CameraScanner = lazy(() => import('../components/CameraScanner.jsx'));
 
-const DRAFT_KEY = 'anshbill.draft';
+const DRAFT_KEY = 'atbsoftware.draft';
 const emptyCustomer = { phone: '', name: '', gstin: '', stateCode: '' };
 
 function loadDraft() {

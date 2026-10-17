@@ -42,13 +42,13 @@ export default function App() {
   useEffect(() => {
     if (getToken()) loadSession();
     const onLogout = () => setUser(null);
-    window.addEventListener('anshbill:logout', onLogout);
-    return () => window.removeEventListener('anshbill:logout', onLogout);
+    window.addEventListener('atbsoftware:logout', onLogout);
+    return () => window.removeEventListener('atbsoftware:logout', onLogout);
   }, [loadSession]);
 
   const logout = () => { setToken(null); setUser(null); };
 
-  if (booting) return <div className="boot">Loading AnshBill…</div>;
+  if (booting) return <div className="boot">Loading ATB Software…</div>;
   if (!user) return <Login onLogin={(token) => { setToken(token); loadSession(); }} />;
 
   const isAdmin = user.role === 'admin';
@@ -59,9 +59,9 @@ export default function App() {
       <div className="shell">
         <aside className="sidebar no-print">
           <div className="brand">
-            <span className="brand-mark">AB</span>
+            <span className="brand-mark">ATB</span>
             <div>
-              <strong>AnshBill</strong>
+              <strong>ATB Software</strong>
               <small>POS</small>
             </div>
           </div>

@@ -1,4 +1,4 @@
-# AnshBill POS
+# ATB Software POS
 
 Retail billing with GST invoices, barcode scanning, stock alerts and daily sales reports.
 Built with **Node.js (Express + built-in SQLite)** and **React (Vite)**.
@@ -36,7 +36,7 @@ npm run build                       # builds the React app into client/dist
 JWT_SECRET=<long-random> npm start  # serves UI + API on :4000
 ```
 
-The database lives at `server/data/anshbill.db`. Back up that file (plus `-wal`/`-shm` if present) regularly.
+The database lives at `server/data/atbsoftware.db`. Back up that file (plus `-wal`/`-shm` if present) regularly.
 Camera scanning needs HTTPS (or localhost), so put the app behind a reverse proxy with TLS if tills connect over the LAN.
 
 ## Project layout

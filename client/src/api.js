@@ -1,4 +1,4 @@
-const TOKEN_KEY = 'anshbill.token';
+const TOKEN_KEY = 'atbsoftware.token';
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (t) => (t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY));
@@ -16,7 +16,7 @@ export async function api(path, { method = 'GET', body } = {}) {
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && path !== '/auth/login') {
     setToken(null);
-    window.dispatchEvent(new Event('anshbill:logout'));
+    window.dispatchEvent(new Event('atbsoftware:logout'));
   }
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
   return data;

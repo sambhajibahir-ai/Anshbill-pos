@@ -24,8 +24,8 @@ export default function Login({ onLogin }) {
     <div className="login-page">
       <form className="login-card" onSubmit={submit}>
         <div className="brand big">
-          <span className="brand-mark">AB</span>
-          <div><strong>AnshBill POS</strong><small>Retail billing with GST</small></div>
+          <span className="brand-mark">ATB</span>
+          <div><strong>ATB Software POS</strong><small>Retail billing with GST</small></div>
         </div>
         <label>Username<input autoFocus autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} required /></label>
         <label>Password<input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>

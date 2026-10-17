@@ -1,9 +1,9 @@
 {
-  "name": "anshbill-pos",
+  "name": "atbsoftware-pos",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "AnshBill POS - retail billing with GST invoices, barcode scanning, stock alerts and daily sales reports",
+  "description": "ATB Software POS - retail billing with GST invoices, barcode scanning, stock alerts and daily sales reports",
   "scripts": {
     "dev": "concurrently -k -n api,web -c blue,green \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "dev:api": "npm run dev --prefix server",

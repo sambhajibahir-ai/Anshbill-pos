@@ -2,7 +2,7 @@ import { neon, Pool } from '@neondatabase/serverless';
 import { hashPassword } from './auth.js';
 
 const DEFAULT_SETTINGS = {
-  shop_name: 'AnshBill Retail Store',
+  shop_name: 'ATB Software Retail Store',
   shop_address: 'Shop No. 1, Main Road, Pune',
   shop_phone: '',
   shop_email: '',
