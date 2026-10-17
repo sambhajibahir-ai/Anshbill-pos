@@ -11,7 +11,9 @@
     "build": "npm run build --prefix client",
     "start": "npm run start --prefix server",
     "seed": "npm run seed --prefix server",
-    "test": "node --disable-warning=ExperimentalWarning --test \"shared/**/*.test.js\" \"server/test/**/*.test.js\""
+    "test": "node --disable-warning=ExperimentalWarning --test \"shared/**/*.test.js\" \"server/test/**/*.test.js\"",
+    "desktop:start": "npm run start --prefix desktop-app",
+    "desktop:dist": "npm run dist:win --prefix desktop-app"
   },
   "engines": {
     "node": ">=22.13"

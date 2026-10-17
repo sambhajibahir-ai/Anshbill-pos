@@ -1,0 +1,16 @@
+{
+  "clientName": "Retail Store Demo",
+  "clientCode": "DEFAULT_001",
+  "enableOfflineSync": false,
+  "syncEndpoint": "",
+  "features": {
+    "barcodeScanner": true,
+    "thermalReceiptPrinter": true,
+    "gstInvoicing": true,
+    "autoDailyBackup": true
+  },
+  "receiptSettings": {
+    "paperWidthMm": 80,
+    "autoPrintOnComplete": false
+  }
+}

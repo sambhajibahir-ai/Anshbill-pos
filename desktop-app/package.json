@@ -1,0 +1,79 @@
+{
+  "name": "atbsoftware-pos-desktop",
+  "version": "1.0.0",
+  "description": "ATB Software POS - Offline Desktop Application with Embedded SQLite & Auto-Updates",
+  "main": "src/main.cjs",
+  "author": "ATB Software",
+  "private": true,
+  "scripts": {
+    "start": "electron src/main.cjs",
+    "build:client": "npm run build --prefix ../client",
+    "pack": "electron-builder --dir",
+    "dist": "npm run build:client && electron-builder",
+    "dist:win": "npm run build:client && electron-builder --win --x64"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "electron-log": "^5.2.4",
+    "electron-updater": "^6.3.9",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "electron": "^34.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.atbsoftware.pos",
+    "productName": "ATB Software POS",
+    "copyright": "Copyright © 2026 ATB Software",
+    "directories": {
+      "output": "../dist-electron",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "server/**/*",
+      "../shared/**/*",
+      "../client/dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "build/default-config.json",
+        "to": "default-config.json"
+      }
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "sambhajibahir-ai",
+        "repo": "Anshbill-pos",
+        "releaseType": "release"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ATB Software POS",
+      "uninstallDisplayName": "ATB Software POS",
+      "runAfterFinish": true
+    }
+  }
+}

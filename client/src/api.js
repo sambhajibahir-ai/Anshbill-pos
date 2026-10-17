@@ -3,9 +3,28 @@ const TOKEN_KEY = 'atbsoftware.token';
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (t) => (t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY));
 
+let backendBaseUrl = '/api';
+
+if (typeof window !== 'undefined' && window.desktopAPI?.getBackendPort) {
+  window.desktopAPI.getBackendPort().then((port) => {
+    if (port) {
+      backendBaseUrl = `http://127.0.0.1:${port}/api`;
+    }
+  }).catch(() => {});
+}
+
 export async function api(path, { method = 'GET', body } = {}) {
   const token = getToken();
-  const res = await fetch(`/api${path}`, {
+  let base = backendBaseUrl;
+  if (typeof window !== 'undefined' && window.desktopAPI?.getBackendPort && base === '/api') {
+    const port = await window.desktopAPI.getBackendPort().catch(() => null);
+    if (port) {
+      base = `http://127.0.0.1:${port}/api`;
+      backendBaseUrl = base;
+    }
+  }
+
+  const res = await fetch(`${base}${path}`, {
     method,
     headers: {
       ...(body !== undefined && { 'Content-Type': 'application/json' }),
