@@ -1,11 +1,12 @@
 node_modules/
 client/dist/
+desktop-app/dist/
 server/data/
 *.db
 *.db-wal
 *.db-shm
 .env
 .vercel
-
 dist-electron/
 electron/dist/
+*.log

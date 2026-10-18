@@ -82,7 +82,7 @@ function createWindow(port) {
     mainWindow.webContents.openDevTools();
   } else {
     // In production, serve the built Vite client
-    const indexPath = path.join(__dirname, '../../client/dist/index.html');
+    const indexPath = path.join(__dirname, '../dist/index.html');
     mainWindow.loadFile(indexPath);
   }
 

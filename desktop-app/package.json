@@ -7,7 +7,9 @@
   "private": true,
   "scripts": {
     "start": "electron src/main.cjs",
-    "build:client": "npm run build --prefix ../client",
+    "test": "node test-desktop-suite.mjs",
+    "test:lifecycle": "node -e \"const {spawnSync}=require('child_process'); spawnSync('.\\\\node_modules\\\\electron\\\\dist\\\\electron.exe', ['test-electron-lifecycle.cjs'], {stdio: 'inherit', env: {...process.env, ELECTRON_RUN_AS_NODE: undefined}})\"",
+    "build:client": "npm run build --prefix ../client && node -e \"require('node:fs').cpSync('../client/dist', './dist', { recursive: true })\"",
     "pack": "electron-builder --dir",
     "dist": "npm run build:client && electron-builder",
     "dist:win": "npm run build:client && electron-builder --win --x64"
@@ -40,7 +42,7 @@
       "src/**/*",
       "server/**/*",
       "shared/**/*",
-      "../client/dist/**/*"
+      "dist/**/*"
     ],
     "extraResources": [
       {

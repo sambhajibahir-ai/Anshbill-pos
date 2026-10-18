@@ -70,3 +70,4 @@ export default function authRoutes(db) {
 
   return r;
 }
+

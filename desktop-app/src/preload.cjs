@@ -13,3 +13,4 @@ contextBridge.exposeInMainWorld('desktopAPI', {
   },
   isDesktop: true,
 });
+

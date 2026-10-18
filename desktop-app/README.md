@@ -115,3 +115,4 @@ When distributing a Windows desktop application, Windows Defender SmartScreen bl
   npm run desktop:dist
   ```
   The resulting Windows installer `ATB Software POS Setup 1.0.0.exe` will be located in [`dist-electron/`](file:///d:/Development/anshbill-pos/dist-electron).
+
