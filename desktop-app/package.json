@@ -39,7 +39,7 @@
     "files": [
       "src/**/*",
       "server/**/*",
-      "../shared/**/*",
+      "shared/**/*",
       "../client/dist/**/*"
     ],
     "extraResources": [
